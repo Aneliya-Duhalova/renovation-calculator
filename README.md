@@ -36,13 +36,18 @@ npm run android
 npm run ios
 ```
 
-## Сборка за публикуване
+## Постоянна инсталация на няколко телефона
 
-За инсталационен APK/AAB или App Store build използвайте [EAS Build](https://docs.expo.dev/build/introduction/):
+Вижте **[ИНСТАЛАЦИЯ.md](./ИНСТАЛАЦИЯ.md)** – създаване на **APK** и инсталация на Android без Expo Go.
+
+Кратко:
 
 ```bash
-npx eas-cli build --platform android
+npx eas-cli login
+npm run build:android
 ```
+
+След build раздайте APK линка или файла на всеки телефон.
 
 ## Пример
 

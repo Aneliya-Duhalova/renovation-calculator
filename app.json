@@ -3,6 +3,7 @@
     "name": "Ремонт калкулатор",
     "slug": "renovation-calculator",
     "version": "1.0.0",
+    "scheme": "renovation-calculator",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -12,6 +13,7 @@
     },
     "android": {
       "package": "bg.renovation.calculator",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -22,9 +24,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-sharing"
-    ]
+    }
   }
 }
