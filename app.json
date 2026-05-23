@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Ремонт калкулатор",
+    "name": "Mr.Ru",
     "slug": "renovation-calculator",
     "version": "1.0.0",
     "scheme": "renovation-calculator",
@@ -26,11 +26,11 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
       "output": "single",
-      "name": "Ремонт калкулатор",
-      "shortName": "Ремонт",
+      "name": "Mr.Ru",
+      "shortName": "Mr.Ru",
       "lang": "bg",
-      "themeColor": "#1B6B4A",
-      "backgroundColor": "#F4F6F8"
+      "themeColor": "#1C1C1C",
+      "backgroundColor": "#F5F5F5"
     },
     "experiments": {
       "baseUrl": "/renovation-calculator"

@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 import { areaFromItem, formatArea, formatMoney, openingsTreatmentLabel } from './calculations';
 import { CURRENCY } from './constants';
-import type { DimensionItem, OfferPdfInput, PriceUnit } from './types';
+import type { DimensionItem, OfferPdfInput, PriceUnit, Room } from './types';
 
 function escapeHtml(text: string): string {
   return text
@@ -63,8 +63,42 @@ function buildDimensionsTable(
     </table>`;
 }
 
+function buildRoomsSection(rooms: Room[]): string {
+  return rooms
+    .map((room) => {
+      const wallRows = room.walls.map(dimRow).join('');
+      const doorRow = dimRow(room.door);
+      const windowRows = room.windows.map(dimRow).join('');
+      const wallArea = room.walls.reduce((s, w) => s + areaFromItem(w), 0);
+      return `
+      <h3>${escapeHtml(room.name)}</h3>
+      <table class="dims">
+        <thead>
+          <tr>
+            <th>Елемент</th>
+            <th class="num">Ширина (м)</th>
+            <th class="num">Височина (м)</th>
+            <th class="num">Площ (м²)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${wallRows}
+          ${doorRow}
+          ${windowRows}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3"><strong>Стени в помещението</strong></td>
+            <td class="num"><strong>${formatArea(wallArea)}</strong></td>
+          </tr>
+        </tfoot>
+      </table>`;
+    })
+    .join('');
+}
+
 export function buildOfferHtml(input: OfferPdfInput): string {
-  const { profile, offerNumber, offerDate, walls, openings, perimeterLm, result } =
+  const { profile, offerNumber, offerDate, rooms, walls, openings, perimeterLm, result } =
     input;
 
   const validity = parseInt(profile.validityDays, 10);
@@ -137,14 +171,14 @@ export function buildOfferHtml(input: OfferPdfInput): string {
       line-height: 1.45;
     }
     .header {
-      border-bottom: 3px solid #1b6b4a;
+      border-bottom: 3px solid #1c1c1c;
       padding-bottom: 16px;
       margin-bottom: 24px;
     }
     .title {
       font-size: 22pt;
       font-weight: 800;
-      color: #1b6b4a;
+      color: #1c1c1c;
       margin: 0 0 8px 0;
     }
     .meta { color: #5c6570; font-size: 10pt; }
@@ -165,7 +199,7 @@ export function buildOfferHtml(input: OfferPdfInput): string {
     .party-name { font-weight: 700; font-size: 12pt; margin-bottom: 4px; }
     h2 {
       font-size: 13pt;
-      color: #1b6b4a;
+      color: #1c1c1c;
       margin: 24px 0 10px 0;
       border-bottom: 1px solid #d8dee4;
       padding-bottom: 4px;
@@ -201,7 +235,7 @@ export function buildOfferHtml(input: OfferPdfInput): string {
     .summary-box .label { font-size: 9pt; color: #5c6570; }
     .summary-box .value { font-size: 16pt; font-weight: 800; color: #1b6b4a; }
     .total-row td {
-      background: #1b6b4a;
+      background: #1c1c1c;
       color: #fff;
       font-weight: 700;
       font-size: 12pt;
@@ -227,7 +261,7 @@ export function buildOfferHtml(input: OfferPdfInput): string {
 </head>
 <body>
   <div class="header">
-    <h1 class="title">Оферта за ремонтни дейности</h1>
+    <h1 class="title">Mr.Ru – оферта за ремонтни дейности</h1>
     <div class="meta">
       <span><strong>№</strong> ${escapeHtml(offerNumber)}</span>
       <span><strong>Дата:</strong> ${escapeHtml(offerDate)}</span>
@@ -237,9 +271,11 @@ export function buildOfferHtml(input: OfferPdfInput): string {
 
   ${companyBlock || clientBlock ? `<div class="parties">${companyBlock}${clientBlock}</div>` : ''}
 
-  <h2>Размери и площи</h2>
-  ${buildDimensionsTable('Стени', walls, 'Няма въведени стени')}
-  ${buildDimensionsTable('Прозорци и врати (изваждат се)', openings, 'Няма въведени отвори')}
+  <h2>Помещения и размери</h2>
+  ${buildRoomsSection(rooms)}
+  <h2>Обобщение площи</h2>
+  ${buildDimensionsTable('Всички стени', walls, 'Няма въведени стени')}
+  ${buildDimensionsTable('Всички отвори', openings, 'Няма въведени отвори')}
 
   <div class="summary-grid">
     <div class="summary-box">
@@ -292,7 +328,7 @@ export function buildOfferHtml(input: OfferPdfInput): string {
   ${notesBlock}
 
   <div class="footer">
-    Генерирано с „Ремонт калкулатор“ · ${escapeHtml(offerDate)}
+    Mr.Ru · ${escapeHtml(offerDate)}
   </div>
 </body>
 </html>`;

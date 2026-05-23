@@ -10,65 +10,53 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityListByCategory } from '../components/ActivityListByCategory';
+import { MrRuHeader } from '../components/MrRuHeader';
 import { OpeningsTreatmentSection } from '../components/OpeningsTreatmentSection';
-import { DimensionCard } from '../components/DimensionCard';
+import { RoomSection } from '../components/RoomSection';
 import { calculateCosts, formatArea, formatMoney } from '../calculations';
 import { CURRENCY } from '../constants';
+import {
+  addRoomWindow,
+  createDefaultRooms,
+  flattenRooms,
+  removeRoomWindow,
+  updateRoomDoor,
+  updateRoomWall,
+  updateRoomWindow,
+} from '../rooms';
 import { loadPrices } from '../storage';
-import type { ActivityPrice, DimensionItem, OpeningsTreatment } from '../types';
+import type { ActivityPrice, OpeningsTreatment, Room } from '../types';
 import { colors, radius, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Calculator'>;
 
-function newItem(label: string): DimensionItem {
-  return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    width: '',
-    height: '',
-    label,
-  };
-}
-
 export function CalculatorScreen({ navigation }: Props) {
-  const [walls, setWalls] = useState<DimensionItem[]>([newItem('Стена 1')]);
-  const [openings, setOpenings] = useState<DimensionItem[]>([]);
+  const [rooms, setRooms] = useState<Room[]>(() => createDefaultRooms());
   const [perimeterLm, setPerimeterLm] = useState('');
   const [openingsTreatment, setOpeningsTreatment] =
     useState<OpeningsTreatment>('subtract_and_linear');
   const [prices, setPrices] = useState<ActivityPrice[]>([]);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
 
-  const refreshPrices = useCallback(async () => {
+  const loadPriceList = useCallback(async () => {
     const loaded = await loadPrices();
     setPrices(loaded);
-    setSelected(new Set(loaded.filter((p) => p.enabled).map((p) => p.id)));
   }, []);
 
   useEffect(() => {
-    const unsub = navigation.addListener('focus', () => {
-      refreshPrices();
-    });
-    refreshPrices();
+    loadPriceList();
+    const unsub = navigation.addListener('focus', loadPriceList);
     return unsub;
-  }, [navigation, refreshPrices]);
+  }, [navigation, loadPriceList]);
+
+  const { walls, openings } = useMemo(() => flattenRooms(rooms), [rooms]);
 
   const result = useMemo(
     () =>
       calculateCosts(walls, openings, perimeterLm, openingsTreatment, selected, prices),
     [walls, openings, perimeterLm, openingsTreatment, selected, prices],
   );
-
-  const updateList = (
-    setter: React.Dispatch<React.SetStateAction<DimensionItem[]>>,
-    id: string,
-    field: keyof DimensionItem,
-    value: string,
-  ) => {
-    setter((list) =>
-      list.map((item) => (item.id === id ? { ...item, [field]: value } : item)),
-    );
-  };
 
   const toggleActivity = (id: string) => {
     setSelected((prev) => {
@@ -89,55 +77,32 @@ export function CalculatorScreen({ navigation }: Props) {
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>Ремонт калкулатор</Text>
-          <Text style={styles.heroSubtitle}>
-            Въведете размери на стени и отвори. Приложението изважда прозорци и врати и
-            изчислява квадратни метри и цена.
-          </Text>
-        </View>
+        <MrRuHeader />
 
-        <Section title="Стени" hint="Ширина × височина за всяка стена">
-          {walls.map((wall, index) => (
-            <DimensionCard
-              key={wall.id}
-              item={wall}
-              placeholderLabel={`Стена ${index + 1}`}
-              onChange={(id, field, value) => updateList(setWalls, id, field, value)}
-              onRemove={(id) => setWalls((list) => list.filter((w) => w.id !== id))}
-              canRemove={walls.length > 1}
+        <Section
+          title="Помещения"
+          hint="5 помещения – по 4 стена, 1 врата и поне 1 прозорец. Натиснете помещение за размери."
+        >
+          {rooms.map((room, index) => (
+            <RoomSection
+              key={room.id}
+              room={room}
+              defaultExpanded={index === 0}
+              onUpdateWall={(roomId, wallId, field, value) =>
+                setRooms((list) => updateRoomWall(list, roomId, wallId, field, value))
+              }
+              onUpdateDoor={(roomId, field, value) =>
+                setRooms((list) => updateRoomDoor(list, roomId, field, value))
+              }
+              onUpdateWindow={(roomId, windowId, field, value) =>
+                setRooms((list) => updateRoomWindow(list, roomId, windowId, field, value))
+              }
+              onAddWindow={(roomId) => setRooms((list) => addRoomWindow(list, roomId))}
+              onRemoveWindow={(roomId, windowId) =>
+                setRooms((list) => removeRoomWindow(list, roomId, windowId))
+              }
             />
           ))}
-          <AddButton
-            label="+ Добави стена"
-            onPress={() => setWalls((list) => [...list, newItem(`Стена ${list.length + 1}`)])}
-          />
-        </Section>
-
-        <Section title="Прозорци и врати" hint="Въведете ширина и височина на всеки отвор">
-          {openings.length === 0 ? (
-            <Text style={styles.empty}>Няма добавени отвори</Text>
-          ) : (
-            openings.map((opening, index) => (
-              <DimensionCard
-                key={opening.id}
-                item={opening}
-                placeholderLabel={index % 2 === 0 ? 'Прозорец' : 'Врата'}
-                onChange={(id, field, value) => updateList(setOpenings, id, field, value)}
-                onRemove={(id) => setOpenings((list) => list.filter((o) => o.id !== id))}
-                canRemove
-              />
-            ))
-          )}
-          <AddButton
-            label="+ Добави прозорец / врата"
-            onPress={() =>
-              setOpenings((list) => [
-                ...list,
-                newItem(list.length % 2 === 0 ? 'Прозорец' : 'Врата'),
-              ])
-            }
-          />
         </Section>
 
         <OpeningsTreatmentSection
@@ -170,16 +135,15 @@ export function CalculatorScreen({ navigation }: Props) {
             />
           ) : (
             result.openingsArea > 0 && (
-              <SummaryRow
-                label="Отвори"
-                value="включени в м² на стените"
-                muted
-              />
+              <SummaryRow label="Отвори" value="включени в м² на стените" muted />
             )
           )}
         </View>
 
-        <Section title="Изберете дейности" hint="Маркирайте какво ще се извършва">
+        <Section
+          title="Изберете дейности"
+          hint="Първоначално нищо не е избрано – маркирайте нужните услуги"
+        >
           <ActivityListByCategory
             prices={prices}
             selected={selected}
@@ -216,6 +180,7 @@ export function CalculatorScreen({ navigation }: Props) {
               style={styles.pdfBtn}
               onPress={() =>
                 navigation.navigate('Offer', {
+                  rooms,
                   walls,
                   openings,
                   perimeterLm,
@@ -258,14 +223,6 @@ function Section({
   );
 }
 
-function AddButton({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable style={styles.addBtn} onPress={onPress}>
-      <Text style={styles.addBtnText}>{label}</Text>
-    </Pressable>
-  );
-}
-
 function SummaryRow({
   label,
   value,
@@ -296,23 +253,6 @@ function SummaryRow({
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.background },
   scroll: { padding: spacing.md, paddingBottom: spacing.xl * 2 },
-  hero: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: spacing.sm,
-  },
-  heroSubtitle: {
-    fontSize: 14,
-    color: '#E8F5EF',
-    lineHeight: 20,
-  },
   section: { marginBottom: spacing.lg },
   sectionTitle: {
     fontSize: 18,
@@ -324,22 +264,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
     marginBottom: spacing.sm,
-  },
-  empty: {
-    fontSize: 14,
-    color: colors.textMuted,
-    fontStyle: 'italic',
-    marginBottom: spacing.sm,
-  },
-  perimeterInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: colors.surface,
-    color: colors.text,
   },
   summaryCard: {
     backgroundColor: colors.surface,
@@ -358,19 +282,6 @@ const styles = StyleSheet.create({
   summaryValue: { fontSize: 15, fontWeight: '600', color: colors.text },
   summaryHighlight: { fontSize: 17, color: colors.primary, fontWeight: '800' },
   muted: { color: colors.textMuted },
-  addBtn: {
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderStyle: 'dashed',
-    borderRadius: radius.sm,
-    padding: spacing.md,
-    alignItems: 'center',
-  },
-  addBtnText: {
-    color: colors.primary,
-    fontWeight: '600',
-    fontSize: 15,
-  },
   costCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,
@@ -413,13 +324,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   pdfBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  settingsLink: {
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  settingsLinkText: {
-    color: colors.primary,
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  settingsLink: { alignItems: 'center', padding: spacing.md },
+  settingsLinkText: { color: colors.primary, fontSize: 16, fontWeight: '600' },
 });

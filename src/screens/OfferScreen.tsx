@@ -56,7 +56,7 @@ function Field({
 }
 
 export function OfferScreen({ route }: Props) {
-  const { walls, openings, perimeterLm, openingsTreatment, result } = route.params;
+  const { rooms, walls, openings, perimeterLm, openingsTreatment, result } = route.params;
   const [profile, setProfile] = useState<OfferProfile | null>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -99,6 +99,7 @@ export function OfferScreen({ route }: Props) {
         profile,
         offerNumber: createOfferNumber(),
         offerDate: formatOfferDate(),
+        rooms,
         walls,
         openings,
         perimeterLm,
@@ -111,7 +112,7 @@ export function OfferScreen({ route }: Props) {
     } finally {
       setGenerating(false);
     }
-  }, [profile, result, walls, openings, perimeterLm, openingsTreatment]);
+  }, [profile, result, rooms, walls, openings, perimeterLm, openingsTreatment]);
 
   if (!profile) {
     return (

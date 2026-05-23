@@ -3,13 +3,14 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CalculatorScreen } from './screens/CalculatorScreen';
 import { OfferScreen } from './screens/OfferScreen';
 import { PricesScreen } from './screens/PricesScreen';
-import type { CalculationResult, DimensionItem, OpeningsTreatment } from './types';
+import type { CalculationResult, DimensionItem, OpeningsTreatment, Room } from './types';
 import { colors } from './theme';
 
 export type RootStackParamList = {
   Calculator: undefined;
   Prices: undefined;
   Offer: {
+    rooms: Room[];
     walls: DimensionItem[];
     openings: DimensionItem[];
     perimeterLm: string;
@@ -34,7 +35,7 @@ export function AppNavigation() {
         <Stack.Screen
           name="Calculator"
           component={CalculatorScreen}
-          options={{ title: 'Ремонт калкулатор' }}
+          options={{ title: 'Mr.Ru' }}
         />
         <Stack.Screen
           name="Prices"

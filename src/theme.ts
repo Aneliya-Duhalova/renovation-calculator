@@ -1,9 +1,9 @@
 export const colors = {
-  background: '#F4F6F8',
+  background: '#F5F5F5',
   surface: '#FFFFFF',
-  primary: '#1B6B4A',
-  primaryLight: '#E8F5EF',
-  accent: '#C45C26',
+  primary: '#1C1C1C',
+  primaryLight: '#F0EFEC',
+  accent: '#8B7355',
   text: '#1A1D21',
   textMuted: '#5C6570',
   border: '#D8DEE4',

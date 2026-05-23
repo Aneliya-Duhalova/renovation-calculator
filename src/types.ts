@@ -50,6 +50,14 @@ export interface DimensionItem {
   label: string;
 }
 
+export interface Room {
+  id: string;
+  name: string;
+  walls: DimensionItem[];
+  door: DimensionItem;
+  windows: DimensionItem[];
+}
+
 export interface CostLine {
   id: ActivityId;
   name: string;
@@ -88,6 +96,7 @@ export interface OfferPdfInput {
   profile: OfferProfile;
   offerNumber: string;
   offerDate: string;
+  rooms: Room[];
   walls: DimensionItem[];
   openings: DimensionItem[];
   perimeterLm: string;
