@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 import { areaFromItem, formatArea, formatMoney, openingsTreatmentLabel } from './calculations';
 import { CURRENCY } from './constants';
-import { roomWallAndCeilingSurfaces } from './rooms';
+import { roomWallAndCeilingSurfaces, roomWallsDimension } from './rooms';
 import type { DimensionItem, OfferPdfInput, PriceUnit, Room } from './types';
 
 function escapeHtml(text: string): string {
@@ -68,24 +68,15 @@ function buildRoomsSection(rooms: Room[]): string {
   return rooms
     .map((room) => {
       const surfaces = roomWallAndCeilingSurfaces(room);
-      const wallRows =
-        room.wallsMode === 'detailed'
-          ? room.walls.map(dimRow).join('')
-          : room.wallsSummaryWidth && room.wallsSummaryHeight
-            ? dimRow({
-                id: 'sum',
-                width: room.wallsSummaryWidth,
-                height: room.wallsSummaryHeight,
-                label: 'Стени (сума ширини × височина)',
-              })
-            : '';
+      const wallsDim = roomWallsDimension(room);
+      const wallRows = wallsDim ? dimRow(wallsDim) : '';
       const ceilingRow = dimRow(room.ceiling);
       const doorRow = dimRow(room.door);
       const windowRows = room.windows.map(dimRow).join('');
       const totalArea = surfaces.reduce((s, i) => s + areaFromItem(i), 0);
       return `
       <h3>${escapeHtml(room.name)}</h3>
-      <p class="muted">${room.wallsMode === 'summary' ? 'Стени: общо (сума + височина)' : 'Стени: поотделно'}${room.syncWallHeights && room.wallsMode === 'detailed' ? ' · една височина' : ''}</p>
+      <p class="muted">Стени: обиколка ${escapeHtml(room.wallPerimeter || '—')} м × височина ${escapeHtml(room.wallHeight || '—')} м</p>
       <table class="dims">
         <thead>
           <tr>

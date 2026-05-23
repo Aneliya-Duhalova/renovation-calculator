@@ -1,5 +1,5 @@
 import { areaFromItem } from './calculations';
-import type { DimensionItem, Room, WallsInputMode } from './types';
+import type { DimensionItem, Room } from './types';
 
 export const DEFAULT_ROOM_NAMES = [
   'Кухня',
@@ -21,11 +21,8 @@ export function createRoom(name: string): Room {
   return {
     id: newId(),
     name,
-    walls: [1, 2, 3, 4].map((n) => newDimensionItem(`${name} – стена ${n}`)),
-    wallsMode: 'detailed',
-    wallsSummaryWidth: '',
-    wallsSummaryHeight: '',
-    syncWallHeights: true,
+    wallPerimeter: '',
+    wallHeight: '',
     ceiling: newDimensionItem(`${name} – таван`),
     door: newDimensionItem(`${name} – врата`),
     windows: [newDimensionItem(`${name} – прозорец 1`)],
@@ -36,27 +33,30 @@ export function createDefaultRooms(): Room[] {
   return DEFAULT_ROOM_NAMES.map((name) => createRoom(name));
 }
 
-/** Повърхности за площ: стени + таван */
+export function roomWallsDimension(room: Room): DimensionItem | null {
+  const p = room.wallPerimeter.trim();
+  const h = room.wallHeight.trim();
+  if (!p || !h) return null;
+  return {
+    id: `${room.id}-walls`,
+    width: p,
+    height: h,
+    label: `${room.name} – стени`,
+  };
+}
+
+/** Повърхности за площ: стени (обиколка × височина) + таван */
 export function roomWallAndCeilingSurfaces(room: Room): DimensionItem[] {
   const surfaces: DimensionItem[] = [];
-
-  if (room.wallsMode === 'summary') {
-    const w = room.wallsSummaryWidth.trim();
-    const h = room.wallsSummaryHeight.trim();
-    if (w && h) {
-      surfaces.push({
-        id: `${room.id}-walls-summary`,
-        width: w,
-        height: h,
-        label: `${room.name} – стени (общо)`,
-      });
-    }
-  } else {
-    surfaces.push(...room.walls);
-  }
-
+  const walls = roomWallsDimension(room);
+  if (walls) surfaces.push(walls);
   surfaces.push(room.ceiling);
   return surfaces;
+}
+
+export function roomWallsArea(room: Room): number {
+  const walls = roomWallsDimension(room);
+  return walls ? areaFromItem(walls) : 0;
 }
 
 export function flattenRooms(rooms: Room[]): {
@@ -68,58 +68,13 @@ export function flattenRooms(rooms: Room[]): {
   return { walls, openings };
 }
 
-export function updateRoomWall(
+export function updateRoomWalls(
   rooms: Room[],
   roomId: string,
-  wallId: string,
-  field: keyof DimensionItem,
-  value: string,
-): Room[] {
-  return rooms.map((room) => {
-    if (room.id !== roomId) return room;
-
-    let walls = room.walls.map((w) => (w.id === wallId ? { ...w, [field]: value } : w));
-
-    if (field === 'height' && room.syncWallHeights && value.trim()) {
-      walls = walls.map((w) => ({ ...w, height: value }));
-    }
-
-    return { ...room, walls };
-  });
-}
-
-export function updateRoomSummary(
-  rooms: Room[],
-  roomId: string,
-  field: 'wallsSummaryWidth' | 'wallsSummaryHeight',
+  field: 'wallPerimeter' | 'wallHeight',
   value: string,
 ): Room[] {
   return rooms.map((room) => (room.id === roomId ? { ...room, [field]: value } : room));
-}
-
-export function setRoomWallsMode(
-  rooms: Room[],
-  roomId: string,
-  mode: WallsInputMode,
-): Room[] {
-  return rooms.map((room) => (room.id === roomId ? { ...room, wallsMode: mode } : room));
-}
-
-export function setRoomSyncWallHeights(
-  rooms: Room[],
-  roomId: string,
-  sync: boolean,
-): Room[] {
-  return rooms.map((room) => {
-    if (room.id !== roomId) return room;
-    if (!sync) return { ...room, syncWallHeights: false };
-
-    const firstHeight = room.walls.find((w) => w.height.trim())?.height ?? '';
-    const walls = firstHeight
-      ? room.walls.map((w) => ({ ...w, height: firstHeight }))
-      : room.walls;
-    return { ...room, syncWallHeights: true, walls };
-  });
 }
 
 export function updateRoomCeiling(

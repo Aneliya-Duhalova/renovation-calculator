@@ -20,12 +20,9 @@ import {
   createDefaultRooms,
   flattenRooms,
   removeRoomWindow,
-  setRoomSyncWallHeights,
-  setRoomWallsMode,
   updateRoomCeiling,
   updateRoomDoor,
-  updateRoomSummary,
-  updateRoomWall,
+  updateRoomWalls,
   updateRoomWindow,
 } from '../rooms';
 import { loadPrices } from '../storage';
@@ -85,24 +82,15 @@ export function CalculatorScreen({ navigation }: Props) {
 
         <Section
           title="Помещения"
-          hint="Стени, таван, врата и прозорци. Може поотделно, общо (сума ширини × височина) или една височина за всички стени."
+          hint="За всяко помещение: обиколка и височина на стените, таван, врата и прозорци."
         >
           {rooms.map((room, index) => (
             <RoomSection
               key={room.id}
               room={room}
               defaultExpanded={index === 0}
-              onUpdateWall={(roomId, wallId, field, value) =>
-                setRooms((list) => updateRoomWall(list, roomId, wallId, field, value))
-              }
-              onUpdateSummary={(roomId, field, value) =>
-                setRooms((list) => updateRoomSummary(list, roomId, field, value))
-              }
-              onSetWallsMode={(roomId, mode) =>
-                setRooms((list) => setRoomWallsMode(list, roomId, mode))
-              }
-              onSetSyncHeights={(roomId, sync) =>
-                setRooms((list) => setRoomSyncWallHeights(list, roomId, sync))
+              onUpdateWalls={(roomId, field, value) =>
+                setRooms((list) => updateRoomWalls(list, roomId, field, value))
               }
               onUpdateCeiling={(roomId, field, value) =>
                 setRooms((list) => updateRoomCeiling(list, roomId, field, value))

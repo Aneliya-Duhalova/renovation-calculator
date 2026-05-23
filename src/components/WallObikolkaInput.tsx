@@ -1,44 +1,30 @@
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { areaFromItem, formatArea } from '../calculations';
-import type { DimensionItem } from '../types';
+import { formatArea } from '../calculations';
+import { roomWallsArea } from '../rooms';
+import type { Room } from '../types';
 import { colors, radius, spacing } from '../theme';
 
 interface Props {
-  summaryWidth: string;
-  summaryHeight: string;
-  onChangeWidth: (v: string) => void;
-  onChangeHeight: (v: string) => void;
+  room: Room;
+  onChangePerimeter: (value: string) => void;
+  onChangeHeight: (value: string) => void;
 }
 
-export function WallsSummaryInput({
-  summaryWidth,
-  summaryHeight,
-  onChangeWidth,
-  onChangeHeight,
-}: Props) {
-  const virtual: DimensionItem = {
-    id: 'summary',
-    width: summaryWidth,
-    height: summaryHeight,
-    label: 'Стени общо',
-  };
-  const area = areaFromItem(virtual);
+export function WallObikolkaInput({ room, onChangePerimeter, onChangeHeight }: Props) {
+  const area = roomWallsArea(room);
 
   return (
     <View style={styles.card}>
-      <Text style={styles.hint}>
-        Съберете ширините на всички стени в едно число (м), височината въведете веднъж.
-        Площ = сума ширини × височина.
-      </Text>
+      <Text style={styles.hint}>Площ стени = обиколка × височина</Text>
       <View style={styles.row}>
         <View style={styles.field}>
-          <Text style={styles.label}>Сума ширини на стените (м)</Text>
+          <Text style={styles.label}>Обиколка (м)</Text>
           <TextInput
             style={styles.input}
-            value={summaryWidth}
-            onChangeText={onChangeWidth}
+            value={room.wallPerimeter}
+            onChangeText={onChangePerimeter}
             keyboardType="decimal-pad"
-            placeholder="напр. 12.5"
+            placeholder="напр. 12"
             placeholderTextColor={colors.textMuted}
           />
         </View>
@@ -47,7 +33,7 @@ export function WallsSummaryInput({
           <Text style={styles.label}>Височина (м)</Text>
           <TextInput
             style={styles.input}
-            value={summaryHeight}
+            value={room.wallHeight}
             onChangeText={onChangeHeight}
             keyboardType="decimal-pad"
             placeholder="напр. 2.7"

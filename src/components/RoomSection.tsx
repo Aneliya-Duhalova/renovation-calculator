@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
-import type { Room, WallsInputMode } from '../types';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { Room } from '../types';
 import { DimensionCard } from './DimensionCard';
-import { WallsSummaryInput } from './WallsSummaryInput';
+import { WallObikolkaInput } from './WallObikolkaInput';
 import { areaFromItem, formatArea } from '../calculations';
 import { colors, radius, spacing } from '../theme';
 
@@ -11,19 +11,7 @@ type DimField = 'width' | 'height' | 'label';
 interface Props {
   room: Room;
   defaultExpanded?: boolean;
-  onUpdateWall: (
-    roomId: string,
-    wallId: string,
-    field: DimField,
-    value: string,
-  ) => void;
-  onUpdateSummary: (
-    roomId: string,
-    field: 'wallsSummaryWidth' | 'wallsSummaryHeight',
-    value: string,
-  ) => void;
-  onSetWallsMode: (roomId: string, mode: WallsInputMode) => void;
-  onSetSyncHeights: (roomId: string, sync: boolean) => void;
+  onUpdateWalls: (roomId: string, field: 'wallPerimeter' | 'wallHeight', value: string) => void;
   onUpdateCeiling: (roomId: string, field: DimField, value: string) => void;
   onUpdateDoor: (roomId: string, field: DimField, value: string) => void;
   onUpdateWindow: (
@@ -39,10 +27,7 @@ interface Props {
 export function RoomSection({
   room,
   defaultExpanded = false,
-  onUpdateWall,
-  onUpdateSummary,
-  onSetWallsMode,
-  onSetSyncHeights,
+  onUpdateWalls,
   onUpdateCeiling,
   onUpdateDoor,
   onUpdateWindow,
@@ -62,56 +47,11 @@ export function RoomSection({
       {expanded && (
         <View style={styles.body}>
           <Text style={styles.subTitle}>Стени</Text>
-          <View style={styles.modeRow}>
-            <ModeChip
-              label="Поотделно (4 стени)"
-              active={room.wallsMode === 'detailed'}
-              onPress={() => onSetWallsMode(room.id, 'detailed')}
-            />
-            <ModeChip
-              label="Общо (сума + височина)"
-              active={room.wallsMode === 'summary'}
-              onPress={() => onSetWallsMode(room.id, 'summary')}
-            />
-          </View>
-
-          {room.wallsMode === 'summary' ? (
-            <WallsSummaryInput
-              summaryWidth={room.wallsSummaryWidth}
-              summaryHeight={room.wallsSummaryHeight}
-              onChangeWidth={(v) => onUpdateSummary(room.id, 'wallsSummaryWidth', v)}
-              onChangeHeight={(v) => onUpdateSummary(room.id, 'wallsSummaryHeight', v)}
-            />
-          ) : (
-            <>
-              <View style={styles.syncRow}>
-                <Text style={styles.syncLabel}>Една височина за всички стени</Text>
-                <Switch
-                  value={room.syncWallHeights}
-                  onValueChange={(v) => onSetSyncHeights(room.id, v)}
-                  trackColor={{ false: colors.border, true: colors.primaryLight }}
-                  thumbColor={room.syncWallHeights ? colors.primary : '#f4f4f4'}
-                />
-              </View>
-              {room.syncWallHeights && (
-                <Text style={styles.syncHint}>
-                  Първата въведена височина се копира автоматично на всички стени.
-                </Text>
-              )}
-              {room.walls.map((wall, index) => (
-                <DimensionCard
-                  key={wall.id}
-                  item={wall}
-                  placeholderLabel={`Стена ${index + 1}`}
-                  onChange={(id, field, value) =>
-                    onUpdateWall(room.id, id, field as DimField, value)
-                  }
-                  onRemove={() => {}}
-                  canRemove={false}
-                />
-              ))}
-            </>
-          )}
+          <WallObikolkaInput
+            room={room}
+            onChangePerimeter={(v) => onUpdateWalls(room.id, 'wallPerimeter', v)}
+            onChangeHeight={(v) => onUpdateWalls(room.id, 'wallHeight', v)}
+          />
 
           <Text style={styles.subTitle}>Таван</Text>
           <DimensionCard
@@ -156,25 +96,6 @@ export function RoomSection({
   );
 }
 
-function ModeChip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={[styles.chip, active && styles.chipActive]}
-      onPress={onPress}
-    >
-      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
@@ -200,32 +121,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: spacing.sm,
     marginBottom: spacing.xs,
-  },
-  modeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginBottom: spacing.sm },
-  chip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 8,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  chipActive: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
-  chipText: { fontSize: 12, color: colors.textMuted, fontWeight: '500' },
-  chipTextActive: { color: colors.primary, fontWeight: '700' },
-  syncRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-    paddingVertical: 4,
-  },
-  syncLabel: { fontSize: 14, color: colors.text, flex: 1, paddingRight: spacing.sm },
-  syncHint: {
-    fontSize: 12,
-    color: colors.accent,
-    marginBottom: spacing.sm,
-    fontStyle: 'italic',
   },
   miniArea: {
     fontSize: 13,

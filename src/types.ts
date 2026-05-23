@@ -50,16 +50,13 @@ export interface DimensionItem {
   label: string;
 }
 
-export type WallsInputMode = 'detailed' | 'summary';
-
 export interface Room {
   id: string;
   name: string;
-  walls: DimensionItem[];
-  wallsMode: WallsInputMode;
-  wallsSummaryWidth: string;
-  wallsSummaryHeight: string;
-  syncWallHeights: boolean;
+  /** Обиколка на стените в метри */
+  wallPerimeter: string;
+  /** Височина на стените в метри */
+  wallHeight: string;
   ceiling: DimensionItem;
   door: DimensionItem;
   windows: DimensionItem[];
