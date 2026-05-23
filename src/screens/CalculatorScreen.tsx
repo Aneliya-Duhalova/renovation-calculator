@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useMemo, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -25,11 +26,7 @@ import {
   updateRoomWalls,
   updateRoomWindow,
 } from '../rooms';
-import {
-  DEFAULT_OPENINGS_TREATMENT,
-  loadOpeningsTreatment,
-  saveOpeningsTreatment,
-} from '../preferencesStorage';
+import { DEFAULT_OPENINGS_TREATMENT } from '../defaults';
 import { loadPrices } from '../storage';
 import type { ActivityPrice, OpeningsTreatment, Room } from '../types';
 import { colors, radius, spacing } from '../theme';
@@ -51,17 +48,23 @@ export function CalculatorScreen({ navigation }: Props) {
     setPrices(loaded);
   }, []);
 
-  useEffect(() => {
-    loadPriceList();
-    loadOpeningsTreatment().then(setOpeningsTreatment);
-    const unsub = navigation.addListener('focus', loadPriceList);
-    return unsub;
-  }, [navigation, loadPriceList]);
+  const applyScreenDefaults = useCallback(() => {
+    setOpeningsTreatment(DEFAULT_OPENINGS_TREATMENT);
+    setPerimeterLm('');
+    setRooms((list) =>
+      list.map((room) => ({
+        ...room,
+        wallsMode: 'summary',
+      })),
+    );
+  }, []);
 
-  const handleOpeningsTreatmentChange = (mode: OpeningsTreatment) => {
-    setOpeningsTreatment(mode);
-    saveOpeningsTreatment(mode);
-  };
+  useFocusEffect(
+    useCallback(() => {
+      applyScreenDefaults();
+      loadPriceList();
+    }, [applyScreenDefaults, loadPriceList]),
+  );
 
   const { walls, openings } = useMemo(() => flattenRooms(rooms), [rooms]);
 
@@ -122,9 +125,10 @@ export function CalculatorScreen({ navigation }: Props) {
         </Section>
 
         <OpeningsTreatmentSection
+          key={openingsTreatment}
           openings={openings}
           treatment={openingsTreatment}
-          onTreatmentChange={handleOpeningsTreatmentChange}
+          onTreatmentChange={setOpeningsTreatment}
           perimeterLm={perimeterLm}
           onPerimeterLmChange={setPerimeterLm}
         />
