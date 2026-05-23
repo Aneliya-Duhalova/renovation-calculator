@@ -1,15 +1,17 @@
 {
   "expo": {
-    "name": "renovation-calculator",
+    "name": "Ремонт калкулатор",
     "slug": "renovation-calculator",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "bg.renovation.calculator",
       "supportsTablet": true
     },
     "android": {
+      "package": "bg.renovation.calculator",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -20,6 +22,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-sharing"
+    ]
   }
 }
