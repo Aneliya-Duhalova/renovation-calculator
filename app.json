@@ -23,7 +23,17 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "Ремонт калкулатор",
+      "shortName": "Ремонт",
+      "lang": "bg",
+      "themeColor": "#1B6B4A",
+      "backgroundColor": "#F4F6F8"
+    },
+    "experiments": {
+      "baseUrl": "/renovation-calculator"
     }
   }
 }

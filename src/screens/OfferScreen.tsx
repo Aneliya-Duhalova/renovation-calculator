@@ -215,13 +215,13 @@ export function OfferScreen({ route }: Props) {
           {generating ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.primaryBtnText}>Генерирай и сподели PDF</Text>
+            <Text style={styles.primaryBtnText}>Генерирай PDF оферта</Text>
           )}
         </Pressable>
 
         <Text style={styles.hint}>
-          След натискане ще се отвори менюто за споделяне – изпратете по Viber, имейл или
-          запазете файла на телефона.
+          На телефон: споделяне през приложения. В браузър: отвори се прозорец – изберете
+          „Запази като PDF“ при печат.
         </Text>
       </ScrollView>
     </KeyboardAvoidingView>

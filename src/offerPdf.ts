@@ -303,6 +303,20 @@ export function formatOfferDate(date = new Date()): string {
 
 export async function exportOfferPdf(input: OfferPdfInput): Promise<void> {
   const html = buildOfferHtml(input);
+
+  if (Platform.OS === 'web') {
+    const win = window.open('', '_blank');
+    if (!win) {
+      Alert.alert('Блокиран прозорец', 'Разрешете изскачащи прозорци за печат на PDF.');
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 400);
+    return;
+  }
+
   const { uri } = await Print.printToFileAsync({
     html,
     base64: false,

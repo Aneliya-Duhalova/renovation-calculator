@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Сканирай с iPhone – Ремонт калкулатор</title>
+  <style>
+    body {
+      font-family: -apple-system, sans-serif;
+      text-align: center;
+      padding: 24px;
+      background: #f4f6f8;
+      color: #1a1d21;
+    }
+    h1 { color: #1b6b4a; font-size: 1.5rem; }
+    .qr { margin: 24px auto; padding: 16px; background: #fff; display: inline-block; border-radius: 16px; box-shadow: 0 4px 20px #0002; }
+    .steps { max-width: 420px; margin: 0 auto; text-align: left; line-height: 1.6; }
+    .steps li { margin-bottom: 10px; }
+    .link { word-break: break-all; font-size: 14px; color: #1b6b4a; margin-top: 16px; }
+    .warn { color: #c45c26; font-size: 14px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Ремонт калкулатор – тест на iPhone</h1>
+  <p><strong>На Mac:</strong> оставете този прозорец отворен.</p>
+  <div class="qr">
+    <img id="qr" width="280" height="280" alt="QR код" />
+  </div>
+  <ol class="steps">
+    <li>На iPhone отворете приложението <strong>Камера</strong> (не Expo Go).</li>
+    <li>Насочете камерата към QR кода на екрана на Mac.</li>
+    <li>Горе ще се появи изскачащ прозорец – натиснете <strong>Отвори в Expo Go</strong>.</li>
+  </ol>
+  <p class="warn">Mac-ът трябва да работи със <code>npx expo start --tunnel</code>.</p>
+  <p class="link" id="expLink"></p>
+  <script>
+    const url = 'exp://3ji6oru-anonymous-8081.exp.direct';
+    document.getElementById('qr').src =
+      'https://api.qrserver.com/v1/create-qr-code/?size=280x280&data=' + encodeURIComponent(url);
+    document.getElementById('expLink').textContent = 'Алтернатива: изпратете си този линк в Viber/iMessage и го докоснете: ' + url;
+  </script>
+</body>
+</html>
