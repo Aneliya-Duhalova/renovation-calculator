@@ -36,7 +36,7 @@ export function CalculatorScreen({ navigation }: Props) {
   const [rooms, setRooms] = useState<Room[]>(() => createDefaultRooms());
   const [perimeterLm, setPerimeterLm] = useState('');
   const [openingsTreatment, setOpeningsTreatment] =
-    useState<OpeningsTreatment>('subtract_and_linear');
+    useState<OpeningsTreatment>('include_in_wall_area');
   const [prices, setPrices] = useState<ActivityPrice[]>([]);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
 

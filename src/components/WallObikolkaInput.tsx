@@ -15,7 +15,7 @@ export function WallObikolkaInput({ room, onChangePerimeter, onChangeHeight }: P
 
   return (
     <View style={styles.card}>
-      <Text style={styles.hint}>Площ стени = обиколка × височина</Text>
+      <Text style={styles.hint}>Общо за стените: площ = обиколка × височина</Text>
       <View style={styles.row}>
         <View style={styles.field}>
           <Text style={styles.label}>Обиколка (м)</Text>
