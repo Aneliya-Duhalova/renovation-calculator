@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ActivityPrice } from '../types';
-import { ACTIVITIES, CURRENCY } from '../constants';
+import { CURRENCY, getActivityDef } from '../constants';
 import { colors, radius, spacing } from '../theme';
 
 interface Props {
@@ -14,8 +14,12 @@ function unitLabel(unit: ActivityPrice['unit']): string {
 }
 
 export function ActivityCheckbox({ price, selected, onToggle }: Props) {
-  const def = ACTIVITIES.find((a) => a.id === price.id);
+  const def = getActivityDef(price.id);
   if (!def) return null;
+
+  const priceLabel = def.priceOnRequest
+    ? 'По договаряне'
+    : `${price.price.toFixed(2)} ${CURRENCY} / ${unitLabel(price.unit)}`;
 
   return (
     <Pressable
@@ -27,9 +31,7 @@ export function ActivityCheckbox({ price, selected, onToggle }: Props) {
       </View>
       <View style={styles.content}>
         <Text style={styles.name}>{def.name}</Text>
-        <Text style={styles.meta}>
-          {price.price.toFixed(2)} {CURRENCY} / {unitLabel(price.unit)}
-        </Text>
+        <Text style={[styles.meta, def.priceOnRequest && styles.metaPending]}>{priceLabel}</Text>
       </View>
     </Pressable>
   );
@@ -81,5 +83,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
     marginTop: 2,
+  },
+  metaPending: {
+    color: colors.accent,
+    fontStyle: 'italic',
   },
 });

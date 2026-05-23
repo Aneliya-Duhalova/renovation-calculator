@@ -10,7 +10,13 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ACTIVITIES, CURRENCY, DEFAULT_PRICES } from '../constants';
+import {
+  activitiesByCategory,
+  CATEGORY_LABELS,
+  CATEGORY_ORDER,
+  CURRENCY,
+  DEFAULT_PRICES,
+} from '../constants';
 import { loadPrices, savePrices } from '../storage';
 import type { ActivityPrice, PriceUnit } from '../types';
 import { colors, radius, spacing } from '../theme';
@@ -25,6 +31,7 @@ function unitLabel(unit: PriceUnit): string {
 export function PricesScreen({ navigation }: Props) {
   const [prices, setPrices] = useState<ActivityPrice[]>([]);
   const [saving, setSaving] = useState(false);
+  const grouped = activitiesByCategory();
 
   useEffect(() => {
     loadPrices().then(setPrices);
@@ -76,41 +83,59 @@ export function PricesScreen({ navigation }: Props) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
       <Text style={styles.intro}>
-        Задайте цена за квадратен метър (м²) или линеен метър (л.м.) за всяка дейност.
-        Стойностите се запазват на устройството.
+        Цените са в евро (€) за м² или л.м. ВиК и Електро – без цени по подразбиране;
+        можете да ги включите в офертата и да зададете цена по-късно.
       </Text>
 
-      {prices.map((row) => {
-        const def = ACTIVITIES.find((a) => a.id === row.id);
-        if (!def) return null;
+      {CATEGORY_ORDER.map((category) => {
+        const defs = grouped.get(category) ?? [];
 
         return (
-          <View key={row.id} style={[styles.card, !row.enabled && styles.cardDisabled]}>
-            <View style={styles.cardHeader}>
-              <View style={styles.cardTitles}>
-                <Text style={styles.name}>{def.name}</Text>
-                <Text style={styles.desc}>{def.description}</Text>
-              </View>
-              <Switch
-                value={row.enabled}
-                onValueChange={() => toggleEnabled(row.id)}
-                trackColor={{ false: colors.border, true: colors.primaryLight }}
-                thumbColor={row.enabled ? colors.primary : '#f4f4f4'}
-              />
-            </View>
+          <View key={category}>
+            <Text style={styles.categoryTitle}>{CATEGORY_LABELS[category]}</Text>
+            {defs.map((def) => {
+              const row = prices.find((p) => p.id === def.id);
+              if (!row) return null;
 
-            <View style={styles.priceRow}>
-              <TextInput
-                style={styles.priceInput}
-                value={row.price > 0 ? String(row.price) : ''}
-                onChangeText={(v) => updatePrice(row.id, v)}
-                keyboardType="decimal-pad"
-                editable={row.enabled}
-              />
-              <Text style={styles.unit}>
-                {CURRENCY} / {unitLabel(row.unit)}
-              </Text>
-            </View>
+              const onRequest = Boolean(def.priceOnRequest);
+
+              return (
+                <View
+                  key={row.id}
+                  style={[styles.card, !row.enabled && styles.cardDisabled]}
+                >
+                  <View style={styles.cardHeader}>
+                    <View style={styles.cardTitles}>
+                      <Text style={styles.name}>{def.name}</Text>
+                      <Text style={styles.desc}>{def.description}</Text>
+                    </View>
+                    <Switch
+                      value={row.enabled}
+                      onValueChange={() => toggleEnabled(row.id)}
+                      trackColor={{ false: colors.border, true: colors.primaryLight }}
+                      thumbColor={row.enabled ? colors.primary : '#f4f4f4'}
+                    />
+                  </View>
+
+                  {onRequest ? (
+                    <Text style={styles.onRequest}>Без цена – по договаряне</Text>
+                  ) : (
+                    <View style={styles.priceRow}>
+                      <TextInput
+                        style={styles.priceInput}
+                        value={row.price > 0 ? String(row.price) : ''}
+                        onChangeText={(v) => updatePrice(row.id, v)}
+                        keyboardType="decimal-pad"
+                        editable={row.enabled}
+                      />
+                      <Text style={styles.unit}>
+                        {CURRENCY} / {unitLabel(row.unit)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
           </View>
         );
       })}
@@ -139,6 +164,13 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginBottom: spacing.lg,
   },
+  categoryTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: colors.primary,
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm,
+  },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.md,
@@ -157,6 +189,11 @@ const styles = StyleSheet.create({
   cardTitles: { flex: 1, paddingRight: spacing.sm },
   name: { fontSize: 16, fontWeight: '700', color: colors.text },
   desc: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  onRequest: {
+    fontSize: 14,
+    color: colors.accent,
+    fontStyle: 'italic',
+  },
   priceRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ActivityCheckbox } from '../components/ActivityCheckbox';
+import { ActivityListByCategory } from '../components/ActivityListByCategory';
 import { DimensionCard } from '../components/DimensionCard';
 import { calculateCosts, formatArea, formatMoney } from '../calculations';
 import { CURRENCY } from '../constants';
@@ -141,8 +141,8 @@ export function CalculatorScreen({ navigation }: Props) {
         </Section>
 
         <Section
-          title="Периметър за фризове (по избор)"
-          hint="Ако е празно, се изчислява от размерите на стените"
+          title="Линейни метри – ръчно (по избор)"
+          hint="За обръщане на отвори: автоматично от прозорци/врати; ръчно само ако е нужно"
         >
           <TextInput
             style={styles.perimeterInput}
@@ -167,21 +167,18 @@ export function CalculatorScreen({ navigation }: Props) {
             highlight
           />
           <SummaryRow
-            label="Периметър (фризове)"
-            value={`${formatArea(result.linearMeters)} л.м.`}
+            label="Периметър на отвори"
+            value={`${formatArea(result.openingsPerimeter)} л.м.`}
             muted
           />
         </View>
 
         <Section title="Изберете дейности" hint="Маркирайте какво ще се извършва">
-          {prices.map((price) => (
-            <ActivityCheckbox
-              key={price.id}
-              price={price}
-              selected={selected.has(price.id)}
-              onToggle={toggleActivity}
-            />
-          ))}
+          <ActivityListByCategory
+            prices={prices}
+            selected={selected}
+            onToggle={toggleActivity}
+          />
         </Section>
 
         {result.lines.length > 0 && (
@@ -192,12 +189,13 @@ export function CalculatorScreen({ navigation }: Props) {
                 <View style={styles.costLeft}>
                   <Text style={styles.costName}>{line.name}</Text>
                   <Text style={styles.costDetail}>
-                    {formatArea(line.quantity)} {line.unit === 'lm' ? 'л.м.' : 'м²'} ×{' '}
-                    {formatMoney(line.unitPrice)} {CURRENCY}
+                    {line.priceOnRequest
+                      ? 'По договаряне'
+                      : `${formatArea(line.quantity)} ${line.unit === 'lm' ? 'л.м.' : 'м²'} × ${formatMoney(line.unitPrice)} ${CURRENCY}`}
                   </Text>
                 </View>
                 <Text style={styles.costValue}>
-                  {formatMoney(line.total)} {CURRENCY}
+                  {line.priceOnRequest ? '—' : `${formatMoney(line.total)} ${CURRENCY}`}
                 </Text>
               </View>
             ))}

@@ -105,8 +105,8 @@ export function buildOfferHtml(input: OfferPdfInput): string {
         <td class="num">${index + 1}</td>
         <td>${escapeHtml(line.name)}</td>
         <td class="num">${formatArea(line.quantity)} ${unitLabel(line.unit)}</td>
-        <td class="num">${formatMoney(line.unitPrice)} ${CURRENCY}</td>
-        <td class="num">${formatMoney(line.total)} ${CURRENCY}</td>
+        <td class="num">${line.priceOnRequest ? 'По договаряне' : `${formatMoney(line.unitPrice)} ${CURRENCY}`}</td>
+        <td class="num">${line.priceOnRequest ? '—' : `${formatMoney(line.total)} ${CURRENCY}`}</td>
       </tr>`,
     )
     .join('');
@@ -116,9 +116,11 @@ export function buildOfferHtml(input: OfferPdfInput): string {
     : '';
 
   const perimeterNote =
-    perimeterLm.trim().length > 0
-      ? `Въведен ръчно: ${escapeHtml(perimeterLm)} л.м.`
-      : 'Изчислен от размерите на стените';
+    result.openingsPerimeter > 0
+      ? `Периметър на отвори: ${formatArea(result.openingsPerimeter)} л.м.`
+      : perimeterLm.trim().length > 0
+        ? `Ръчно въведени л.м.: ${escapeHtml(perimeterLm)}`
+        : 'Добавете прозорци/врати за обръщане на отвори';
 
   return `<!DOCTYPE html>
 <html lang="bg">
@@ -252,8 +254,8 @@ export function buildOfferHtml(input: OfferPdfInput): string {
       <div class="value">${formatArea(result.netArea)} м²</div>
     </div>
     <div class="summary-box">
-      <div class="label">Периметър (фризове)</div>
-      <div class="value">${formatArea(result.linearMeters)} л.м.</div>
+      <div class="label">Периметър на отвори</div>
+      <div class="value">${formatArea(result.openingsPerimeter)} л.м.</div>
     </div>
   </div>
   <p class="muted">Периметър: ${perimeterNote}</p>

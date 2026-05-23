@@ -1,21 +1,36 @@
 export type PriceUnit = 'm2' | 'lm';
 
+export type ActivityCategory = 'drywall' | 'finish' | 'plumbing' | 'electrical';
+
 export type ActivityId =
-  | 'drywall'
-  | 'putty_one'
-  | 'putty_two'
-  | 'paint'
-  | 'frieze'
-  | 'grout'
-  | 'wallpaper_removal'
-  | 'primer';
+  | 'drywall_lining'
+  | 'drywall_partition'
+  | 'drywall_double'
+  | 'putty_joints'
+  | 'openings_wrap'
+  | 'putty_two_fine'
+  | 'sanding'
+  | 'primer'
+  | 'paint_one'
+  | 'paint_multi'
+  | 'plumb_sink'
+  | 'plumb_toilet'
+  | 'plumb_boiler'
+  | 'plumb_pipes'
+  | 'plumb_drain'
+  | 'electro_outlets'
+  | 'electro_lighting'
+  | 'electro_panel'
+  | 'electro_cables';
 
 export interface ActivityDefinition {
   id: ActivityId;
+  category: ActivityCategory;
   name: string;
   description: string;
   defaultPrice: number;
   unit: PriceUnit;
+  priceOnRequest?: boolean;
 }
 
 export interface ActivityPrice {
@@ -32,12 +47,23 @@ export interface DimensionItem {
   label: string;
 }
 
+export interface CostLine {
+  id: ActivityId;
+  name: string;
+  quantity: number;
+  unit: PriceUnit;
+  unitPrice: number;
+  total: number;
+  priceOnRequest?: boolean;
+}
+
 export interface CalculationResult {
   grossArea: number;
   openingsArea: number;
   netArea: number;
+  openingsPerimeter: number;
   linearMeters: number;
-  lines: { id: ActivityId; name: string; quantity: number; unit: PriceUnit; unitPrice: number; total: number }[];
+  lines: CostLine[];
   grandTotal: number;
 }
 
