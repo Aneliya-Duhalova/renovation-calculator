@@ -97,7 +97,7 @@ export function CalculatorScreen({ navigation }: Props) {
 
         <Section
           title="Помещения"
-          hint="За всяко помещение: обиколка и височина на стените, таван, врата и прозорци."
+          hint="Стени: сума ширини × височина. Таван: ширина × дължина. Плюс врата и прозорци."
         >
           {rooms.map((room, index) => (
             <RoomSection

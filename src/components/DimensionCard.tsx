@@ -7,6 +7,9 @@ import { colors, radius, spacing } from '../theme';
 interface Props {
   item: DimensionItem;
   placeholderLabel: string;
+  firstFieldLabel?: string;
+  secondFieldLabel?: string;
+  areaLabel?: string;
   onChange: (id: string, field: keyof DimensionItem, value: string) => void;
   onRemove: (id: string) => void;
   canRemove: boolean;
@@ -15,6 +18,9 @@ interface Props {
 export function DimensionCard({
   item,
   placeholderLabel,
+  firstFieldLabel = 'Ширина (м)',
+  secondFieldLabel = 'Височина (м)',
+  areaLabel = 'Площ',
   onChange,
   onRemove,
   canRemove,
@@ -40,7 +46,7 @@ export function DimensionCard({
 
       <View style={styles.row}>
         <View style={styles.field}>
-          <Text style={styles.fieldLabel}>Ширина (м)</Text>
+          <Text style={styles.fieldLabel}>{firstFieldLabel}</Text>
           <TextInput
             style={styles.input}
             value={item.width}
@@ -52,7 +58,7 @@ export function DimensionCard({
         </View>
         <Text style={styles.times}>×</Text>
         <View style={styles.field}>
-          <Text style={styles.fieldLabel}>Височина (м)</Text>
+          <Text style={styles.fieldLabel}>{secondFieldLabel}</Text>
           <TextInput
             style={styles.input}
             value={item.height}
@@ -65,7 +71,7 @@ export function DimensionCard({
       </View>
 
       <Text style={styles.area}>
-        Площ: <Text style={styles.areaValue}>{formatArea(area)} м²</Text>
+        {areaLabel}: <Text style={styles.areaValue}>{formatArea(area)} м²</Text>
       </Text>
     </View>
   );

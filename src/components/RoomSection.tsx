@@ -53,17 +53,17 @@ export function RoomSection({
             onChangeHeight={(v) => onUpdateWalls(room.id, 'wallHeight', v)}
           />
 
-          <Text style={styles.subTitle}>Таван</Text>
+          <Text style={styles.subTitle}>Таван (ширина × дължина)</Text>
           <DimensionCard
             item={room.ceiling}
             placeholderLabel="Таван"
+            firstFieldLabel="Ширина (м)"
+            secondFieldLabel="Дължина (м)"
+            areaLabel="Площ таван"
             onChange={(_, field, value) => onUpdateCeiling(room.id, field as DimField, value)}
             onRemove={() => {}}
             canRemove={false}
           />
-          {ceilingArea > 0 && (
-            <Text style={styles.miniArea}>Площ таван: {formatArea(ceilingArea)} м²</Text>
-          )}
 
           <Text style={styles.subTitle}>Врата (1)</Text>
           <DimensionCard

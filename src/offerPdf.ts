@@ -70,7 +70,14 @@ function buildRoomsSection(rooms: Room[]): string {
       const surfaces = roomWallAndCeilingSurfaces(room);
       const wallsDim = roomWallsDimension(room);
       const wallRows = wallsDim ? dimRow(wallsDim) : '';
-      const ceilingRow = dimRow(room.ceiling);
+      const ceilingArea = areaFromItem(room.ceiling);
+      const ceilingRow = `
+      <tr>
+        <td>${escapeHtml(room.ceiling.label || 'Таван')} (ширина × дължина)</td>
+        <td class="num">${escapeHtml(room.ceiling.width || '—')}</td>
+        <td class="num">${escapeHtml(room.ceiling.height || '—')}</td>
+        <td class="num">${ceilingArea > 0 ? formatArea(ceilingArea) : '—'}</td>
+      </tr>`;
       const doorRow = dimRow(room.door);
       const windowRows = room.windows.map(dimRow).join('');
       const totalArea = surfaces.reduce((s, i) => s + areaFromItem(i), 0);
@@ -81,8 +88,8 @@ function buildRoomsSection(rooms: Room[]): string {
         <thead>
           <tr>
             <th>Елемент</th>
-            <th class="num">Ширина (м)</th>
-            <th class="num">Височина (м)</th>
+            <th class="num">Ширина / сума (м)</th>
+            <th class="num">Височина / дължина (м)</th>
             <th class="num">Площ (м²)</th>
           </tr>
         </thead>
