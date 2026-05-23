@@ -20,7 +20,11 @@ import {
   createDefaultRooms,
   flattenRooms,
   removeRoomWindow,
+  setRoomSyncWallHeights,
+  setRoomWallsMode,
+  updateRoomCeiling,
   updateRoomDoor,
+  updateRoomSummary,
   updateRoomWall,
   updateRoomWindow,
 } from '../rooms';
@@ -81,7 +85,7 @@ export function CalculatorScreen({ navigation }: Props) {
 
         <Section
           title="Помещения"
-          hint="5 помещения – по 4 стена, 1 врата и поне 1 прозорец. Натиснете помещение за размери."
+          hint="Стени, таван, врата и прозорци. Може поотделно, общо (сума ширини × височина) или една височина за всички стени."
         >
           {rooms.map((room, index) => (
             <RoomSection
@@ -90,6 +94,18 @@ export function CalculatorScreen({ navigation }: Props) {
               defaultExpanded={index === 0}
               onUpdateWall={(roomId, wallId, field, value) =>
                 setRooms((list) => updateRoomWall(list, roomId, wallId, field, value))
+              }
+              onUpdateSummary={(roomId, field, value) =>
+                setRooms((list) => updateRoomSummary(list, roomId, field, value))
+              }
+              onSetWallsMode={(roomId, mode) =>
+                setRooms((list) => setRoomWallsMode(list, roomId, mode))
+              }
+              onSetSyncHeights={(roomId, sync) =>
+                setRooms((list) => setRoomSyncWallHeights(list, roomId, sync))
+              }
+              onUpdateCeiling={(roomId, field, value) =>
+                setRooms((list) => updateRoomCeiling(list, roomId, field, value))
               }
               onUpdateDoor={(roomId, field, value) =>
                 setRooms((list) => updateRoomDoor(list, roomId, field, value))
@@ -114,7 +130,10 @@ export function CalculatorScreen({ navigation }: Props) {
         />
 
         <View style={styles.summaryCard}>
-          <SummaryRow label="Обща площ на стени" value={`${formatArea(result.grossArea)} м²`} />
+          <SummaryRow
+            label="Обща площ (стени + тавани)"
+            value={`${formatArea(result.grossArea)} м²`}
+          />
           {result.subtractOpeningsFromArea && result.openingsArea > 0 && (
             <SummaryRow
               label="Минус отвори (м²)"

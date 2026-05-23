@@ -3,6 +3,7 @@ import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 import { areaFromItem, formatArea, formatMoney, openingsTreatmentLabel } from './calculations';
 import { CURRENCY } from './constants';
+import { roomWallAndCeilingSurfaces } from './rooms';
 import type { DimensionItem, OfferPdfInput, PriceUnit, Room } from './types';
 
 function escapeHtml(text: string): string {
@@ -66,12 +67,25 @@ function buildDimensionsTable(
 function buildRoomsSection(rooms: Room[]): string {
   return rooms
     .map((room) => {
-      const wallRows = room.walls.map(dimRow).join('');
+      const surfaces = roomWallAndCeilingSurfaces(room);
+      const wallRows =
+        room.wallsMode === 'detailed'
+          ? room.walls.map(dimRow).join('')
+          : room.wallsSummaryWidth && room.wallsSummaryHeight
+            ? dimRow({
+                id: 'sum',
+                width: room.wallsSummaryWidth,
+                height: room.wallsSummaryHeight,
+                label: 'Стени (сума ширини × височина)',
+              })
+            : '';
+      const ceilingRow = dimRow(room.ceiling);
       const doorRow = dimRow(room.door);
       const windowRows = room.windows.map(dimRow).join('');
-      const wallArea = room.walls.reduce((s, w) => s + areaFromItem(w), 0);
+      const totalArea = surfaces.reduce((s, i) => s + areaFromItem(i), 0);
       return `
       <h3>${escapeHtml(room.name)}</h3>
+      <p class="muted">${room.wallsMode === 'summary' ? 'Стени: общо (сума + височина)' : 'Стени: поотделно'}${room.syncWallHeights && room.wallsMode === 'detailed' ? ' · една височина' : ''}</p>
       <table class="dims">
         <thead>
           <tr>
@@ -83,13 +97,14 @@ function buildRoomsSection(rooms: Room[]): string {
         </thead>
         <tbody>
           ${wallRows}
+          ${ceilingRow}
           ${doorRow}
           ${windowRows}
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="3"><strong>Стени в помещението</strong></td>
-            <td class="num"><strong>${formatArea(wallArea)}</strong></td>
+            <td colspan="3"><strong>Стени + таван</strong></td>
+            <td class="num"><strong>${formatArea(totalArea)}</strong></td>
           </tr>
         </tfoot>
       </table>`;

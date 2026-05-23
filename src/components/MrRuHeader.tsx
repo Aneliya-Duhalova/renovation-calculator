@@ -1,15 +1,24 @@
-import { Image, ImageBackground, StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing } from '../theme';
+import { Image, ImageBackground, Platform, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { spacing } from '../theme';
 
 const logo = require('../../assets/branding/logo.png');
 const heroBanner = require('../../assets/branding/hero-banner.png');
 
+const BANNER_HEIGHT = 220;
+
 export function MrRuHeader() {
+  const { width } = useWindowDimensions();
+
   return (
-    <View style={styles.wrap}>
-      <ImageBackground source={heroBanner} style={styles.banner} imageStyle={styles.bannerImage}>
-        <View style={styles.bannerOverlay} />
-        <View style={styles.bannerContent}>
+    <View style={styles.outer}>
+      <ImageBackground
+        source={heroBanner}
+        style={[styles.banner, { width, height: BANNER_HEIGHT }]}
+        imageStyle={styles.bannerImage}
+        resizeMode="cover"
+      >
+        <View style={styles.overlay} />
+        <View style={styles.content}>
           <Image source={logo} style={styles.logo} resizeMode="contain" />
           <Text style={styles.tagline}>Калкулатор за ремонт и довършителни работи</Text>
         </View>
@@ -19,31 +28,32 @@ export function MrRuHeader() {
 }
 
 const styles = StyleSheet.create({
-  wrap: {
+  outer: {
+    marginHorizontal: -spacing.md,
+    marginTop: Platform.OS === 'web' ? -spacing.md : 0,
     marginBottom: spacing.lg,
-    borderRadius: radius.lg,
     overflow: 'hidden',
   },
   banner: {
-    minHeight: 160,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bannerImage: {
-    borderRadius: radius.lg,
+    width: '100%',
+    height: '100%',
   },
-  bannerOverlay: {
+  overlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    borderRadius: radius.lg,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
-  bannerContent: {
+  content: {
     alignItems: 'center',
-    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
+    zIndex: 1,
   },
   logo: {
-    width: 200,
-    height: 72,
+    width: 220,
+    height: 80,
     marginBottom: spacing.sm,
   },
   tagline: {
@@ -51,8 +61,8 @@ const styles = StyleSheet.create({
     color: '#fff',
     textAlign: 'center',
     fontWeight: '500',
-    textShadowColor: '#000',
+    textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    textShadowRadius: 6,
   },
 });
