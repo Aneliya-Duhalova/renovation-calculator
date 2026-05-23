@@ -1,7 +1,7 @@
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
-import { areaFromItem, formatArea, formatMoney } from './calculations';
+import { areaFromItem, formatArea, formatMoney, openingsTreatmentLabel } from './calculations';
 import { CURRENCY } from './constants';
 import type { DimensionItem, OfferPdfInput, PriceUnit } from './types';
 
@@ -115,12 +115,13 @@ export function buildOfferHtml(input: OfferPdfInput): string {
     ? `<div class="notes"><strong>Бележки:</strong><br/>${escapeHtml(profile.offerNotes).replace(/\n/g, '<br/>')}</div>`
     : '';
 
-  const perimeterNote =
-    result.openingsPerimeter > 0
-      ? `Периметър на отвори: ${formatArea(result.openingsPerimeter)} л.м.`
-      : perimeterLm.trim().length > 0
-        ? `Ръчно въведени л.м.: ${escapeHtml(perimeterLm)}`
-        : 'Добавете прозорци/врати за обръщане на отвори';
+  const perimeterNote = result.subtractOpeningsFromArea
+    ? result.wrapLinearMeters > 0
+      ? `Линейни метри за обръщане: ${formatArea(result.wrapLinearMeters)} л.м.`
+      : 'Добавете размери на отвори или въведете л.м. ръчно'
+    : 'Отворите са включени в площта на стените (без отделно обръщане на л.м.)';
+
+  const openingsModeNote = openingsTreatmentLabel(result.openingsTreatment);
 
   return `<!DOCTYPE html>
 <html lang="bg">
@@ -245,20 +246,28 @@ export function buildOfferHtml(input: OfferPdfInput): string {
       <div class="label">Обща площ стени</div>
       <div class="value">${formatArea(result.grossArea)} м²</div>
     </div>
-    <div class="summary-box">
+    ${
+      result.subtractOpeningsFromArea && result.openingsArea > 0
+        ? `<div class="summary-box">
       <div class="label">Минус отвори</div>
       <div class="value">− ${formatArea(result.openingsArea)} м²</div>
-    </div>
+    </div>`
+        : ''
+    }
     <div class="summary-box">
-      <div class="label">Нетна площ</div>
+      <div class="label">Площ за работа</div>
       <div class="value">${formatArea(result.netArea)} м²</div>
     </div>
-    <div class="summary-box">
-      <div class="label">Периметър на отвори</div>
-      <div class="value">${formatArea(result.openingsPerimeter)} л.м.</div>
-    </div>
+    ${
+      result.subtractOpeningsFromArea
+        ? `<div class="summary-box">
+      <div class="label">Обръщане (л.м.)</div>
+      <div class="value">${formatArea(result.wrapLinearMeters)} л.м.</div>
+    </div>`
+        : ''
+    }
   </div>
-  <p class="muted">Периметър: ${perimeterNote}</p>
+  <p class="muted"><strong>Отвори:</strong> ${escapeHtml(openingsModeNote)}. ${perimeterNote}</p>
 
   <h2>Дейности и цени</h2>
   <table>

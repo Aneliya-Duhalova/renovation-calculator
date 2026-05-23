@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CalculatorScreen } from './screens/CalculatorScreen';
 import { OfferScreen } from './screens/OfferScreen';
 import { PricesScreen } from './screens/PricesScreen';
-import type { CalculationResult, DimensionItem } from './types';
+import type { CalculationResult, DimensionItem, OpeningsTreatment } from './types';
 import { colors } from './theme';
 
 export type RootStackParamList = {
@@ -13,6 +13,7 @@ export type RootStackParamList = {
     walls: DimensionItem[];
     openings: DimensionItem[];
     perimeterLm: string;
+    openingsTreatment: OpeningsTreatment;
     result: CalculationResult;
   };
 };

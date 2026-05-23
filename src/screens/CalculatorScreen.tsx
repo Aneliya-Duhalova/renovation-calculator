@@ -6,16 +6,16 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ActivityListByCategory } from '../components/ActivityListByCategory';
+import { OpeningsTreatmentSection } from '../components/OpeningsTreatmentSection';
 import { DimensionCard } from '../components/DimensionCard';
 import { calculateCosts, formatArea, formatMoney } from '../calculations';
 import { CURRENCY } from '../constants';
 import { loadPrices } from '../storage';
-import type { ActivityPrice, DimensionItem } from '../types';
+import type { ActivityPrice, DimensionItem, OpeningsTreatment } from '../types';
 import { colors, radius, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation';
 
@@ -34,6 +34,8 @@ export function CalculatorScreen({ navigation }: Props) {
   const [walls, setWalls] = useState<DimensionItem[]>([newItem('Стена 1')]);
   const [openings, setOpenings] = useState<DimensionItem[]>([]);
   const [perimeterLm, setPerimeterLm] = useState('');
+  const [openingsTreatment, setOpeningsTreatment] =
+    useState<OpeningsTreatment>('subtract_and_linear');
   const [prices, setPrices] = useState<ActivityPrice[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -52,8 +54,9 @@ export function CalculatorScreen({ navigation }: Props) {
   }, [navigation, refreshPrices]);
 
   const result = useMemo(
-    () => calculateCosts(walls, openings, perimeterLm, selected, prices),
-    [walls, openings, perimeterLm, selected, prices],
+    () =>
+      calculateCosts(walls, openings, perimeterLm, openingsTreatment, selected, prices),
+    [walls, openings, perimeterLm, openingsTreatment, selected, prices],
   );
 
   const updateList = (
@@ -111,10 +114,7 @@ export function CalculatorScreen({ navigation }: Props) {
           />
         </Section>
 
-        <Section
-          title="Прозорци и врати"
-          hint="От тяхната площ се изважда от общата площ на стените"
-        >
+        <Section title="Прозорци и врати" hint="Въведете ширина и височина на всеки отвор">
           {openings.length === 0 ? (
             <Text style={styles.empty}>Няма добавени отвори</Text>
           ) : (
@@ -140,37 +140,43 @@ export function CalculatorScreen({ navigation }: Props) {
           />
         </Section>
 
-        <Section
-          title="Линейни метри – ръчно (по избор)"
-          hint="За обръщане на отвори: автоматично от прозорци/врати; ръчно само ако е нужно"
-        >
-          <TextInput
-            style={styles.perimeterInput}
-            value={perimeterLm}
-            onChangeText={setPerimeterLm}
-            keyboardType="decimal-pad"
-            placeholder="Линейни метри (л.м.)"
-            placeholderTextColor={colors.textMuted}
-          />
-        </Section>
+        <OpeningsTreatmentSection
+          openings={openings}
+          treatment={openingsTreatment}
+          onTreatmentChange={setOpeningsTreatment}
+          perimeterLm={perimeterLm}
+          onPerimeterLmChange={setPerimeterLm}
+        />
 
         <View style={styles.summaryCard}>
           <SummaryRow label="Обща площ на стени" value={`${formatArea(result.grossArea)} м²`} />
+          {result.subtractOpeningsFromArea && result.openingsArea > 0 && (
+            <SummaryRow
+              label="Минус отвори (м²)"
+              value={`− ${formatArea(result.openingsArea)} м²`}
+              muted
+            />
+          )}
           <SummaryRow
-            label="Минус отвори"
-            value={`− ${formatArea(result.openingsArea)} м²`}
-            muted
-          />
-          <SummaryRow
-            label="Нетна площ за работа"
+            label="Площ за работа (м²)"
             value={`${formatArea(result.netArea)} м²`}
             highlight
           />
-          <SummaryRow
-            label="Периметър на отвори"
-            value={`${formatArea(result.openingsPerimeter)} л.м.`}
-            muted
-          />
+          {result.subtractOpeningsFromArea ? (
+            <SummaryRow
+              label="Обръщане – линейни метри"
+              value={`${formatArea(result.wrapLinearMeters)} л.м.`}
+              muted
+            />
+          ) : (
+            result.openingsArea > 0 && (
+              <SummaryRow
+                label="Отвори"
+                value="включени в м² на стените"
+                muted
+              />
+            )
+          )}
         </View>
 
         <Section title="Изберете дейности" hint="Маркирайте какво ще се извършва">
@@ -213,6 +219,7 @@ export function CalculatorScreen({ navigation }: Props) {
                   walls,
                   openings,
                   perimeterLm,
+                  openingsTreatment,
                   result,
                 })
               }

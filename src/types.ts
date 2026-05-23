@@ -1,5 +1,8 @@
 export type PriceUnit = 'm2' | 'lm';
 
+/** subtract_and_linear: изваждат се от м², обръщане на л.м. | include_in_wall_area: остават в м² на стените */
+export type OpeningsTreatment = 'subtract_and_linear' | 'include_in_wall_area';
+
 export type ActivityCategory = 'drywall' | 'finish' | 'plumbing' | 'electrical';
 
 export type ActivityId =
@@ -62,7 +65,9 @@ export interface CalculationResult {
   openingsArea: number;
   netArea: number;
   openingsPerimeter: number;
-  linearMeters: number;
+  openingsTreatment: OpeningsTreatment;
+  subtractOpeningsFromArea: boolean;
+  wrapLinearMeters: number;
   lines: CostLine[];
   grandTotal: number;
 }
@@ -86,5 +91,6 @@ export interface OfferPdfInput {
   walls: DimensionItem[];
   openings: DimensionItem[];
   perimeterLm: string;
+  openingsTreatment: OpeningsTreatment;
   result: CalculationResult;
 }

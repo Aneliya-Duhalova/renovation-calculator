@@ -1,5 +1,11 @@
 import { ACTIVITIES } from './constants';
-import type { ActivityId, ActivityPrice, CalculationResult, DimensionItem } from './types';
+import type {
+  ActivityId,
+  ActivityPrice,
+  CalculationResult,
+  DimensionItem,
+  OpeningsTreatment,
+} from './types';
 
 function parseDim(value: string): number {
   const n = parseFloat(value.replace(',', '.'));
@@ -32,6 +38,19 @@ export function perimeterFromOpenings(openings: DimensionItem[]): number {
   }, 0);
 }
 
+export function wrapLinearMeters(
+  openings: DimensionItem[],
+  perimeterLm: string,
+  treatment: OpeningsTreatment,
+): number {
+  if (treatment !== 'subtract_and_linear') return 0;
+
+  const manual = parseDim(perimeterLm);
+  if (manual > 0) return manual;
+
+  return perimeterFromOpenings(openings);
+}
+
 function quantityForActivity(
   activityId: ActivityId,
   unit: ActivityPrice['unit'],
@@ -39,14 +58,13 @@ function quantityForActivity(
   openings: DimensionItem[],
   perimeterLm: string,
   netArea: number,
+  treatment: OpeningsTreatment,
+  wrapLm: number,
 ): number {
   if (unit === 'm2') return netArea;
 
   if (activityId === 'openings_wrap') {
-    const fromOpenings = perimeterFromOpenings(openings);
-    if (fromOpenings > 0) return fromOpenings;
-    const manual = parseDim(perimeterLm);
-    return manual > 0 ? manual : 0;
+    return wrapLm;
   }
 
   const manual = parseDim(perimeterLm);
@@ -57,17 +75,18 @@ export function calculateCosts(
   walls: DimensionItem[],
   openings: DimensionItem[],
   perimeterLm: string,
+  openingsTreatment: OpeningsTreatment,
   selectedIds: Set<string>,
   prices: ActivityPrice[],
 ): CalculationResult {
   const grossArea = sumAreas(walls);
   const openingsArea = sumAreas(openings);
-  const netArea = Math.max(0, grossArea - openingsArea);
   const openingsPerimeter = perimeterFromOpenings(openings);
-
-  const parsedPerimeter = parseDim(perimeterLm);
-  const linearMeters =
-    parsedPerimeter > 0 ? parsedPerimeter : perimeterFromWalls(walls);
+  const subtractOpeningsFromArea = openingsTreatment === 'subtract_and_linear';
+  const netArea = subtractOpeningsFromArea
+    ? Math.max(0, grossArea - openingsArea)
+    : grossArea;
+  const wrapLm = wrapLinearMeters(openings, perimeterLm, openingsTreatment);
 
   const lines: CalculationResult['lines'] = [];
   let grandTotal = 0;
@@ -87,6 +106,8 @@ export function calculateCosts(
       openings,
       perimeterLm,
       netArea,
+      openingsTreatment,
+      wrapLm,
     );
 
     if (!onRequest && quantity <= 0) continue;
@@ -122,10 +143,18 @@ export function calculateCosts(
     openingsArea,
     netArea,
     openingsPerimeter,
-    linearMeters,
+    openingsTreatment,
+    subtractOpeningsFromArea,
+    wrapLinearMeters: wrapLm,
     lines,
     grandTotal,
   };
+}
+
+export function openingsTreatmentLabel(treatment: OpeningsTreatment): string {
+  return treatment === 'subtract_and_linear'
+    ? 'Изваждат се от м²; обръщане на л.м.'
+    : 'Включени в площта на стените (м²)';
 }
 
 export function formatArea(value: number): string {
