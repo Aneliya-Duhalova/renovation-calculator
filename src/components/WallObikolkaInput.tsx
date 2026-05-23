@@ -15,16 +15,19 @@ export function WallObikolkaInput({ room, onChangePerimeter, onChangeHeight }: P
 
   return (
     <View style={styles.card}>
-      <Text style={styles.hint}>Общо за стените: площ = обиколка × височина</Text>
+      <View style={styles.modeBadge}>
+        <Text style={styles.modeBadgeText}>✓ Общо (сума + височина)</Text>
+      </View>
+      <Text style={styles.hint}>Площ стени = сума на ширините × височина</Text>
       <View style={styles.row}>
         <View style={styles.field}>
-          <Text style={styles.label}>Обиколка (м)</Text>
+          <Text style={styles.label}>Сума на ширини (м)</Text>
           <TextInput
             style={styles.input}
             value={room.wallPerimeter}
             onChangeText={onChangePerimeter}
             keyboardType="decimal-pad"
-            placeholder="напр. 12"
+            placeholder="напр. 12.5"
             placeholderTextColor={colors.textMuted}
           />
         </View>
@@ -55,7 +58,22 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.primary,
+  },
+  modeBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primaryLight,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.primary,
+  },
+  modeBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.primary,
   },
   hint: { fontSize: 12, color: colors.textMuted, lineHeight: 17, marginBottom: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sm },

@@ -76,7 +76,7 @@ function buildRoomsSection(rooms: Room[]): string {
       const totalArea = surfaces.reduce((s, i) => s + areaFromItem(i), 0);
       return `
       <h3>${escapeHtml(room.name)}</h3>
-      <p class="muted">Стени: обиколка ${escapeHtml(room.wallPerimeter || '—')} м × височина ${escapeHtml(room.wallHeight || '—')} м</p>
+      <p class="muted">Стени (общо): сума ширини ${escapeHtml(room.wallPerimeter || '—')} м × височина ${escapeHtml(room.wallHeight || '—')} м</p>
       <table class="dims">
         <thead>
           <tr>

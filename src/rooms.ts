@@ -21,6 +21,7 @@ export function createRoom(name: string): Room {
   return {
     id: newId(),
     name,
+    wallsMode: 'summary',
     wallPerimeter: '',
     wallHeight: '',
     ceiling: newDimensionItem(`${name} – таван`),
@@ -41,7 +42,7 @@ export function roomWallsDimension(room: Room): DimensionItem | null {
     id: `${room.id}-walls`,
     width: p,
     height: h,
-    label: `${room.name} – стени`,
+    label: `${room.name} – стени (общо)`,
   };
 }
 

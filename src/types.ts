@@ -50,12 +50,16 @@ export interface DimensionItem {
   label: string;
 }
 
+/** summary = общо (сума на ширини × височина) */
+export type WallsInputMode = 'summary';
+
 export interface Room {
   id: string;
   name: string;
-  /** Обиколка на стените в метри */
+  wallsMode: WallsInputMode;
+  /** Сума на ширините на стените (м) */
   wallPerimeter: string;
-  /** Височина на стените в метри */
+  /** Височина на стените (м) */
   wallHeight: string;
   ceiling: DimensionItem;
   door: DimensionItem;

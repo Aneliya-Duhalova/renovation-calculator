@@ -25,6 +25,11 @@ import {
   updateRoomWalls,
   updateRoomWindow,
 } from '../rooms';
+import {
+  DEFAULT_OPENINGS_TREATMENT,
+  loadOpeningsTreatment,
+  saveOpeningsTreatment,
+} from '../preferencesStorage';
 import { loadPrices } from '../storage';
 import type { ActivityPrice, OpeningsTreatment, Room } from '../types';
 import { colors, radius, spacing } from '../theme';
@@ -35,8 +40,9 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Calculator'>;
 export function CalculatorScreen({ navigation }: Props) {
   const [rooms, setRooms] = useState<Room[]>(() => createDefaultRooms());
   const [perimeterLm, setPerimeterLm] = useState('');
-  const [openingsTreatment, setOpeningsTreatment] =
-    useState<OpeningsTreatment>('include_in_wall_area');
+  const [openingsTreatment, setOpeningsTreatment] = useState<OpeningsTreatment>(
+    DEFAULT_OPENINGS_TREATMENT,
+  );
   const [prices, setPrices] = useState<ActivityPrice[]>([]);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
 
@@ -47,9 +53,15 @@ export function CalculatorScreen({ navigation }: Props) {
 
   useEffect(() => {
     loadPriceList();
+    loadOpeningsTreatment().then(setOpeningsTreatment);
     const unsub = navigation.addListener('focus', loadPriceList);
     return unsub;
   }, [navigation, loadPriceList]);
+
+  const handleOpeningsTreatmentChange = (mode: OpeningsTreatment) => {
+    setOpeningsTreatment(mode);
+    saveOpeningsTreatment(mode);
+  };
 
   const { walls, openings } = useMemo(() => flattenRooms(rooms), [rooms]);
 
@@ -112,7 +124,7 @@ export function CalculatorScreen({ navigation }: Props) {
         <OpeningsTreatmentSection
           openings={openings}
           treatment={openingsTreatment}
-          onTreatmentChange={setOpeningsTreatment}
+          onTreatmentChange={handleOpeningsTreatmentChange}
           perimeterLm={perimeterLm}
           onPerimeterLmChange={setPerimeterLm}
         />

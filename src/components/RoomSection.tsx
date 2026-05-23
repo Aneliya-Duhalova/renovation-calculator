@@ -46,7 +46,7 @@ export function RoomSection({
 
       {expanded && (
         <View style={styles.body}>
-          <Text style={styles.subTitle}>Стени – общо (обиколка × височина)</Text>
+          <Text style={styles.subTitle}>Стени</Text>
           <WallObikolkaInput
             room={room}
             onChangePerimeter={(v) => onUpdateWalls(room.id, 'wallPerimeter', v)}
