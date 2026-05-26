@@ -50,6 +50,12 @@ export interface DimensionItem {
   label: string;
 }
 
+/** Таван: ширина × дължина (не височина) */
+export interface CeilingDimensions {
+  width: string;
+  length: string;
+}
+
 /** summary = общо (сума на ширини × височина) */
 export type WallsInputMode = 'summary';
 
@@ -61,7 +67,7 @@ export interface Room {
   wallPerimeter: string;
   /** Височина на стените (м) */
   wallHeight: string;
-  ceiling: DimensionItem;
+  ceiling: CeilingDimensions;
   door: DimensionItem;
   windows: DimensionItem[];
 }

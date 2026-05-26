@@ -1,5 +1,5 @@
 import { areaFromItem } from './calculations';
-import type { DimensionItem, Room } from './types';
+import type { CeilingDimensions, DimensionItem, Room } from './types';
 
 export const DEFAULT_ROOM_NAMES = [
   'Кухня',
@@ -13,8 +13,17 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+function parseDim(value: string): number {
+  const n = parseFloat(value.replace(',', '.'));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
 export function newDimensionItem(label: string): DimensionItem {
   return { id: newId(), width: '', height: '', label };
+}
+
+export function ceilingArea(ceiling: CeilingDimensions): number {
+  return parseDim(ceiling.width) * parseDim(ceiling.length);
 }
 
 export function createRoom(name: string): Room {
@@ -24,7 +33,7 @@ export function createRoom(name: string): Room {
     wallsMode: 'summary',
     wallPerimeter: '',
     wallHeight: '',
-    ceiling: newDimensionItem(`${name} – таван`),
+    ceiling: { width: '', length: '' },
     door: newDimensionItem(`${name} – врата`),
     windows: [newDimensionItem(`${name} – прозорец 1`)],
   };
@@ -46,12 +55,24 @@ export function roomWallsDimension(room: Room): DimensionItem | null {
   };
 }
 
-/** Повърхности за площ: стени (обиколка × височина) + таван */
+export function ceilingAsDimensionItem(room: Room): DimensionItem | null {
+  const { width, length } = room.ceiling;
+  if (!width.trim() || !length.trim()) return null;
+  return {
+    id: `${room.id}-ceiling`,
+    width,
+    height: length,
+    label: `${room.name} – таван`,
+  };
+}
+
+/** Повърхности за площ: стени + таван */
 export function roomWallAndCeilingSurfaces(room: Room): DimensionItem[] {
   const surfaces: DimensionItem[] = [];
   const walls = roomWallsDimension(room);
   if (walls) surfaces.push(walls);
-  surfaces.push(room.ceiling);
+  const ceil = ceilingAsDimensionItem(room);
+  if (ceil) surfaces.push(ceil);
   return surfaces;
 }
 
@@ -81,7 +102,7 @@ export function updateRoomWalls(
 export function updateRoomCeiling(
   rooms: Room[],
   roomId: string,
-  field: keyof DimensionItem,
+  field: keyof CeilingDimensions,
   value: string,
 ): Room[] {
   return rooms.map((room) =>

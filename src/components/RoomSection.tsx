@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Room } from '../types';
+import { CeilingInput } from './CeilingInput';
 import { DimensionCard } from './DimensionCard';
 import { WallObikolkaInput } from './WallObikolkaInput';
-import { areaFromItem, formatArea } from '../calculations';
 import { colors, radius, spacing } from '../theme';
 
 type DimField = 'width' | 'height' | 'label';
@@ -12,7 +12,7 @@ interface Props {
   room: Room;
   defaultExpanded?: boolean;
   onUpdateWalls: (roomId: string, field: 'wallPerimeter' | 'wallHeight', value: string) => void;
-  onUpdateCeiling: (roomId: string, field: DimField, value: string) => void;
+  onUpdateCeiling: (roomId: string, field: 'width' | 'length', value: string) => void;
   onUpdateDoor: (roomId: string, field: DimField, value: string) => void;
   onUpdateWindow: (
     roomId: string,
@@ -35,8 +35,6 @@ export function RoomSection({
   onRemoveWindow,
 }: Props) {
   const [expanded, setExpanded] = useState(defaultExpanded);
-  const ceilingArea = areaFromItem(room.ceiling);
-
   return (
     <View style={styles.card}>
       <Pressable style={styles.header} onPress={() => setExpanded((e) => !e)}>
@@ -53,16 +51,10 @@ export function RoomSection({
             onChangeHeight={(v) => onUpdateWalls(room.id, 'wallHeight', v)}
           />
 
-          <Text style={styles.subTitle}>Таван (ширина × дължина)</Text>
-          <DimensionCard
-            item={room.ceiling}
-            placeholderLabel="Таван"
-            firstFieldLabel="Ширина (м)"
-            secondFieldLabel="Дължина (м)"
-            areaLabel="Площ таван"
-            onChange={(_, field, value) => onUpdateCeiling(room.id, field as DimField, value)}
-            onRemove={() => {}}
-            canRemove={false}
+          <CeilingInput
+            ceiling={room.ceiling}
+            onChangeWidth={(v) => onUpdateCeiling(room.id, 'width', v)}
+            onChangeLength={(v) => onUpdateCeiling(room.id, 'length', v)}
           />
 
           <Text style={styles.subTitle}>Врата (1)</Text>

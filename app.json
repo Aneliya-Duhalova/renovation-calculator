@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mr.Ru",
     "slug": "renovation-calculator",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "scheme": "renovation-calculator",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

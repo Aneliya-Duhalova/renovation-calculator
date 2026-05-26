@@ -3,7 +3,7 @@ import * as Sharing from 'expo-sharing';
 import { Alert, Platform } from 'react-native';
 import { areaFromItem, formatArea, formatMoney, openingsTreatmentLabel } from './calculations';
 import { CURRENCY } from './constants';
-import { roomWallAndCeilingSurfaces, roomWallsDimension } from './rooms';
+import { ceilingArea, roomWallAndCeilingSurfaces, roomWallsDimension } from './rooms';
 import type { DimensionItem, OfferPdfInput, PriceUnit, Room } from './types';
 
 function escapeHtml(text: string): string {
@@ -70,13 +70,13 @@ function buildRoomsSection(rooms: Room[]): string {
       const surfaces = roomWallAndCeilingSurfaces(room);
       const wallsDim = roomWallsDimension(room);
       const wallRows = wallsDim ? dimRow(wallsDim) : '';
-      const ceilingArea = areaFromItem(room.ceiling);
+      const ceilArea = ceilingArea(room.ceiling);
       const ceilingRow = `
       <tr>
-        <td>${escapeHtml(room.ceiling.label || 'Таван')} (ширина × дължина)</td>
+        <td>${escapeHtml(room.name)} – таван (ширина × дължина)</td>
         <td class="num">${escapeHtml(room.ceiling.width || '—')}</td>
-        <td class="num">${escapeHtml(room.ceiling.height || '—')}</td>
-        <td class="num">${ceilingArea > 0 ? formatArea(ceilingArea) : '—'}</td>
+        <td class="num">${escapeHtml(room.ceiling.length || '—')}</td>
+        <td class="num">${ceilArea > 0 ? formatArea(ceilArea) : '—'}</td>
       </tr>`;
       const doorRow = dimRow(room.door);
       const windowRows = room.windows.map(dimRow).join('');
